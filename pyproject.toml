@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "polka-bot"
+version = "0.1.0"
+description = "A FastAPI Telegram bot that validates URLs and posts them to a channel, complete with helpful commands and lively logging."
+authors = ["Stas German <stas.german@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+keywords = ["telegram-bot", "fastapi", "webhooks", "bot", "telegram"]
+homepage = "https://github.com/StGerman/polka-bot"
+packages = [
+    { include = "polka_bot", from = "src" }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.12"
+fastapi = "*"
+uvicorn = "*"
+python-telegram-bot = "*"
+requests = "*"
+python-dotenv = "^1.0.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+black = "*"
+ruff = "*"
+mkdocs = "*"
+mkdocs-material = "*"
+mkdocstrings = "*"
+
+[build-system]
+requires = ["poetry-core>=1.5.0"]
+build-backend = "poetry.core.masonry.api"
