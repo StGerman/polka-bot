@@ -1,8 +1,7 @@
-import os
 import pytest
 import requests
 from unittest.mock import patch, MagicMock, AsyncMock
-from telegram import Update, Message, Chat, User
+from telegram import Update, Message
 from telegram.ext import ContextTypes
 
 from polka_bot.bot import BotConfig, BotHandlers, create_app
