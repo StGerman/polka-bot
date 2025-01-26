@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: A sample SAM template for Polka Bot (FastAPI + Telegram), deployed as an AWS Lambda behind API Gateway.
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: python3.13
+
+# ------------------------------------------------------------------------------
+# 1. Declare SSM Parameters
+#    These references let you pull token/webhook/channel from Parameter Store
+#    at *deployment* time.
+# ------------------------------------------------------------------------------
+Parameters:
+  TelegramTokenParameter:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: "Path in SSM to the Telegram Bot Token"
+    Default: "/polka-bot/telegram-token"
+
+  TelegramWebhookUrlParameter:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: "Path in SSM to the Telegram Webhook URL"
+    Default: "/polka-bot/telegram-webhook-url"
+
+  TelegramChannelNameParameter:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: "Path in SSM to the Telegram Channel Name"
+    Default: "/polka-bot/telegram-channel-name"
+
+Resources:
+  # ----------------------------------------------------------------------------
+  # 2. Main PolkaBot Function
+  #    - We rely on a wsgi_handler or asgi_handler (e.g. Mangum) to run FastAPI.
+  #    - References SSM parameters for environment variables.
+  #    - Exposes an API Gateway route at /{proxy+}.
+  # ----------------------------------------------------------------------------
+  PolkaBotFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: polka_bot.wsgi_handler.lambda_handler
+      CodeUri: src/
+      Environment:
+        Variables:
+          TELEGRAM_BOT_TOKEN: !Ref TelegramTokenParameter
+          TELEGRAM_WEBHOOK_URL: !Ref TelegramWebhookUrlParameter
+          TELEGRAM_CHANNEL_ID: !Ref TelegramChannelNameParameter
+      Events:
+        PolkaBotApiEvent:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+      # Grant permission to read SSM parameters at runtime, if your code calls SSM.
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ssm:GetParameter
+                - ssm:GetParameters
+              Resource:
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/polka-bot/*
+
+# ------------------------------------------------------------------------------
+# 3. Outputs
+#    Provide a convenient way to get the API Gateway invoke URL after deployment.
+# ------------------------------------------------------------------------------
+Outputs:
+  PolkaBotApiUrl:
+    Description: "Invoke URL for the Polka Bot"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/alive"

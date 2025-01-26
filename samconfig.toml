@@ -1,0 +1,11 @@
+version = 0.1
+[default.deploy.parameters]
+stack_name = "polka-bot"
+resolve_s3 = true
+s3_prefix = "polka-bot"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+disable_rollback = true
+parameter_overrides = "TelegramTokenParameter=\"/polka-bot/telegram-token\" TelegramWebhookUrlParameter=\"/polka-bot/telegram-webhook-url\" TelegramChannelNameParameter=\"/polka-bot/telegram-channel-name\""
+image_repositories = []
