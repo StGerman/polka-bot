@@ -1,4 +1,14 @@
-# bot.py
+"""
+This module contains the main logic for the Polka Bot. It includes:
+1. BotConfig: A class to hold the configuration for the bot.
+2. BotHandlers: A class to handle the bot's commands and messages.
+3. create_app: A function to create a new Telegram bot application.
+
+The main logic is encapsulated in the create_app function, which:
+1. Validates the bot's configuration.
+2. Creates a new Telegram bot application.
+"""
+
 import os
 import logging
 from urllib.parse import urlparse
@@ -17,6 +27,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class BotConfig:
+    """
+    Bot configuration class.
+    """
     def __init__(self):
         self.bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
         if not self.bot_token:
@@ -31,6 +44,12 @@ class BotConfig:
 
 
 class BotHandlers:
+    """
+    Bot handlers class. Handles bot commands and messages. Handles:
+    - /start command
+    - /help command
+    - URL validation and distribution
+    """
     def __init__(self, config: BotConfig):
         self.config = config
 

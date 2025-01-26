@@ -1,3 +1,4 @@
+# app.py
 """
 HTTP server logic for the Polka Bot.
 
@@ -15,8 +16,7 @@ from fastapi.responses import JSONResponse
 from telegram import Update
 
 # Import the refactored bot logic
-# (Assuming bot.py contains BotConfig, create_app, and a logger instance)
-from bot import BotConfig, create_app, logger
+from polka_bot.bot import BotConfig, create_app, logger
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -29,10 +29,7 @@ async def lifespan(app: FastAPI):
     Shutdown logic:
       - Delete the webhook
     """
-    # 1. Load environment config
     bot_config = BotConfig()
-
-    # 2. Create the Telegram bot application
     telegram_app = create_app(bot_config)
 
     # 3. Set Telegram webhook
@@ -47,7 +44,7 @@ async def lifespan(app: FastAPI):
     app.state.telegram_app = telegram_app
 
     logger.info("Polka Bot is up and running!")
-    yield
+    yield  # run the application
 
     # ----- Shutdown logic -----
     logger.info("Removing Telegram webhook and shutting down Polka Bot...")
@@ -57,21 +54,28 @@ async def lifespan(app: FastAPI):
         logger.error("Failed to delete webhook: %s", e)
 
 
-# Create the FastAPI application, using the lifespan to manage webhook setup/teardown
+# The FastAPI application
 fastapi_app = FastAPI(lifespan=lifespan)
 
 
 @fastapi_app.post("/webhook")
 async def telegram_webhook(request: Request):
     """
-    Receives Telegram updates via JSON payload and places them into the
-    telegram_app's update queue for processing.
+    Receives Telegram updates via JSON payload
+    and places them into the telegram_app's update queue.
     """
-    # Ensure env & telegram_app loaded
     try:
         data = await request.json()
         update = Update.de_json(data, fastapi_app.state.telegram_app.bot)
+
+        # Basic check: if there's no message and no callback_query,
+        # treat this as invalid.
+        if update.message is None and update.callback_query is None:
+            raise ValueError("No message or callback_query in update.")
+
+        # Put the update in the queue
         await fastapi_app.state.telegram_app.update_queue.put(update)
+
     except Exception as e:
         logging.error(f"Error in /webhook endpoint: {e}")
         return JSONResponse(
@@ -79,7 +83,6 @@ async def telegram_webhook(request: Request):
         )
 
     return JSONResponse(content={"status": "ok"}, status_code=200)
-
 
 @fastapi_app.get("/")
 def health_check():
