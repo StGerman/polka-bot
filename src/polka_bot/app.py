@@ -18,6 +18,7 @@ from telegram import Update
 # Import the refactored bot logic
 from polka_bot.bot import BotConfig, create_app, logger
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -83,6 +84,7 @@ async def telegram_webhook(request: Request):
         )
 
     return JSONResponse(content={"status": "ok"}, status_code=200)
+
 
 @fastapi_app.get("/")
 def health_check():

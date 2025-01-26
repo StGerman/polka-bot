@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 
 from polka_bot.app import fastapi_app
 
+
 @pytest.fixture
 def client():
     """
@@ -53,7 +54,7 @@ def test_health_check(client):
                     "date": 2222222222,
                     "text": "A callback query message",
                 },
-                "data": "callback_data_example"
+                "data": "callback_data_example",
             },
         },
     ],
@@ -108,7 +109,10 @@ def test_webhook_endpoint_invalid_payload(client, malformed_payload):
         },
     ],
 )
-@patch("polka_bot.app.fastapi_app.state.telegram_app.update_queue.put", new_callable=AsyncMock)
+@patch(
+    "polka_bot.app.fastapi_app.state.telegram_app.update_queue.put",
+    new_callable=AsyncMock,
+)
 def test_webhook_endpoint_queue_interaction(mock_put, client, update_json):
     """
     Example of mocking the queue to verify that /webhook

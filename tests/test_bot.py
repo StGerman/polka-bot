@@ -153,7 +153,9 @@ async def test_handle_message_valid_url(mock_head, bot_handlers_fixture):
     await bot_handlers_fixture.handle_message(mock_update, mock_context)
 
     # Assert requests.head was called
-    mock_head.assert_called_once_with("https://example.com", allow_redirects=True, timeout=5)
+    mock_head.assert_called_once_with(
+        "https://example.com", allow_redirects=True, timeout=5
+    )
 
     # Assert it posted to the channel
     mock_bot.send_message.assert_awaited_once()
@@ -258,6 +260,7 @@ def test_create_app(bot_config_fixture):
     with handlers registered.
     """
     from telegram.ext import Application
+
     app = create_app(bot_config_fixture)
     assert isinstance(app, Application)
     # Verify handlers (optional, depending on how you want to confirm).

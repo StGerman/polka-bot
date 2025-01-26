@@ -26,10 +26,12 @@ from telegram.ext import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class BotConfig:
     """
     Bot configuration class.
     """
+
     def __init__(self):
         self.bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
         if not self.bot_token:
@@ -50,15 +52,20 @@ class BotHandlers:
     - /help command
     - URL validation and distribution
     """
+
     def __init__(self, config: BotConfig):
         self.config = config
 
-    async def start_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    async def start_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
         await update.message.reply_text(
             "Welcome to Polka Bot! Use /help to see available commands."
         )
 
-    async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    async def help_command(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
         help_text = (
             "Commands:\n"
             "/start - Start the bot and see a welcome message\n"
@@ -72,7 +79,9 @@ class BotHandlers:
         parsed = urlparse(url.strip())
         return parsed.scheme in ("http", "https") and bool(parsed.netloc)
 
-    async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    async def handle_message(
+        self, update: Update, context: ContextTypes.DEFAULT_TYPE
+    ) -> None:
         user_text = (update.message.text or "").strip()
         if self.is_valid_url(user_text):
             try:
@@ -82,14 +91,18 @@ class BotHandlers:
                         chat_id=self.config.channel_id,
                         text=f"User submitted a valid URL: {user_text}",
                     )
-                    await update.message.reply_text("This link seems valid and was posted!")
+                    await update.message.reply_text(
+                        "This link seems valid and was posted!"
+                    )
                 else:
                     await update.message.reply_text(
                         f"That link returned status code {response.status_code}, so it might be invalid."
                     )
             except Exception as e:
                 logger.error("Error validating URL: %s", e)
-                await update.message.reply_text("I couldn't open that link. Please try again later.")
+                await update.message.reply_text(
+                    "I couldn't open that link. Please try again later."
+                )
         else:
             await update.message.reply_text(
                 "Send me a valid link or type /help for commands."
@@ -107,5 +120,7 @@ def create_app(config: BotConfig):
 
     app.add_handler(CommandHandler("start", handlers.start_command))
     app.add_handler(CommandHandler("help", handlers.help_command))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handlers.handle_message))
+    app.add_handler(
+        MessageHandler(filters.TEXT & ~filters.COMMAND, handlers.handle_message)
+    )
     return app
