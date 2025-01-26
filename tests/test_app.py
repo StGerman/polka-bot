@@ -25,7 +25,7 @@ def test_health_check(client):
     response = client.get("/alive")
     assert response.status_code == 200
     data = response.json()
-    assert data == {"status": "Polka Bot is running!"}
+    assert data == {"status": "Polka Bot is running! You should see this in the logs."}
 
 
 @pytest.mark.parametrize(

@@ -76,4 +76,4 @@ async def telegram_webhook(request: Request):
 def health_check():
     """Simple health-check endpoint."""
     logger.info("Health check endpoint accessed.")
-    return {"status": "Polka Bot is running!"}
+    return {"status": "Polka Bot is running! You should see this in the logs."}

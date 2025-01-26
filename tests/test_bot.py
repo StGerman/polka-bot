@@ -35,6 +35,7 @@ def test_bot_config_missing_token(monkeypatch):
     with pytest.raises(ValueError, match="TELEGRAM_BOT_TOKEN is required"):
         BotConfig()
 
+
 def test_bot_config_missing_channel(monkeypatch):
     """
     Test that BotConfig sets a default channel_id when TELEGRAM_CHANNEL_ID is missing.
@@ -42,6 +43,7 @@ def test_bot_config_missing_channel(monkeypatch):
     monkeypatch.delenv("TELEGRAM_CHANNEL_ID", raising=False)
     config = BotConfig()
     assert config.channel_id == "@your_public_channel"
+
 
 # -----------------------------------------------------------------------------
 # 2. Test BotHandlers.is_valid_url
