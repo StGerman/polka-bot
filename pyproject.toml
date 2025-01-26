@@ -18,6 +18,7 @@ uvicorn = "*"
 python-telegram-bot = "*"
 requests = "*"
 python-dotenv = "^1.0.1"
+mangum = "^0.19.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"

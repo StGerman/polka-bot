@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: A sample SAM template for Polka Bot (FastAPI + Telegram)
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: python3.13
+
+# -------------------------------------------------------------
+# 1. Declare SSM Parameters
+# -------------------------------------------------------------
+Parameters:
+  TelegramTokenParameter:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: "Path in SSM to the Telegram Bot Token"
+    Default: "/polka-bot/telegram-token"
+
+  TelegramWebhookUrlParameter:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: "Path in SSM to the Telegram Webhook URL"
+    Default: "/polka-bot/telegram-webhook-url"
+
+  TelegramChannelNameParameter:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: "Path in SSM to the Telegram Channel Name"
+    Default: "/polka-bot/telegram-channel-name"
+
+Resources:
+  PolkaBotFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: wsgi_handler.lambda_handler
+      CodeUri: .
+
+      # -------------------------------------------------------
+      # 2. Reference the Parameters in Environment Variables
+      # -------------------------------------------------------
+      Environment:
+        Variables:
+          TELEGRAM_BOT_TOKEN: !Ref TelegramTokenParameter
+          TELEGRAM_WEBHOOK_URL: !Ref TelegramWebhookUrlParameter
+          TELEGRAM_CHANNEL_ID: !Ref TelegramChannelNameParameter
+
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+
+      # -------------------------------------------------------
+      # 3. (Optional) Grant Lambda permission to read SSM
+      #    parameters at *runtime* if needed
+      # -------------------------------------------------------
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ssm:GetParameter
+                - ssm:GetParameters
+              Resource:
+                # Adjust this ARN to match your parameter paths
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/polka-bot/*
