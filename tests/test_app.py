@@ -22,7 +22,7 @@ def test_health_check(client):
     """
     Basic integration test for the health-check endpoint.
     """
-    response = client.get("/")
+    response = client.get("/alive")
     assert response.status_code == 200
     data = response.json()
     assert data == {"status": "Polka Bot is running!"}

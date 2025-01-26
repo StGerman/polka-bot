@@ -17,13 +17,11 @@ def test_bot_config_all_env(monkeypatch):
     when they are all set.
     """
     monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "test_bot_token")
-    monkeypatch.setenv("TELEGRAM_WEBHOOK_URL", "https://example.com/webhook")
     monkeypatch.setenv("TELEGRAM_CHANNEL_ID", "@testchannel")
 
     config = BotConfig()
 
     assert config.bot_token == "test_bot_token"
-    assert config.webhook_url == "https://example.com/webhook"
     assert config.channel_id == "@testchannel"
     # admin_chat_id is optional, so we won't test it explicitly here.
 
@@ -33,22 +31,17 @@ def test_bot_config_missing_token(monkeypatch):
     Test that BotConfig raises an error when TELEGRAM_BOT_TOKEN is missing.
     """
     monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
-    monkeypatch.setenv("TELEGRAM_WEBHOOK_URL", "https://example.com/webhook")
 
     with pytest.raises(ValueError, match="TELEGRAM_BOT_TOKEN is required"):
         BotConfig()
 
-
-def test_bot_config_missing_webhook(monkeypatch):
+def test_bot_config_missing_channel(monkeypatch):
     """
-    Test that BotConfig raises an error when TELEGRAM_WEBHOOK_URL is missing.
+    Test that BotConfig sets a default channel_id when TELEGRAM_CHANNEL_ID is missing.
     """
-    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "test_bot_token")
-    monkeypatch.delenv("TELEGRAM_WEBHOOK_URL", raising=False)
-
-    with pytest.raises(ValueError, match="TELEGRAM_WEBHOOK_URL is required"):
-        BotConfig()
-
+    monkeypatch.delenv("TELEGRAM_CHANNEL_ID", raising=False)
+    config = BotConfig()
+    assert config.channel_id == "@your_public_channel"
 
 # -----------------------------------------------------------------------------
 # 2. Test BotHandlers.is_valid_url
@@ -57,7 +50,6 @@ def test_bot_config_missing_webhook(monkeypatch):
 def bot_config_fixture(monkeypatch):
     """Provides a BotConfig with minimal valid environment variables."""
     monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "test_bot_token")
-    monkeypatch.setenv("TELEGRAM_WEBHOOK_URL", "https://example.com/webhook")
     monkeypatch.setenv("TELEGRAM_CHANNEL_ID", "@testchannel")
     return BotConfig()
 

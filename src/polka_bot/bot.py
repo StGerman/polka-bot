@@ -26,6 +26,7 @@ from telegram.ext import (
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+logger.info("Hello from Polka Bot!")
 
 class BotConfig:
     """
@@ -36,12 +37,6 @@ class BotConfig:
         self.bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
         if not self.bot_token:
             raise ValueError("Environment variable TELEGRAM_BOT_TOKEN is required.")
-
-        self.webhook_url = os.getenv("TELEGRAM_WEBHOOK_URL")
-        if not self.webhook_url:
-            raise ValueError("Environment variable TELEGRAM_WEBHOOK_URL is required.")
-
-        self.admin_chat_id = os.getenv("ADMIN_CHAT_ID")
         self.channel_id = os.getenv("TELEGRAM_CHANNEL_ID", "@your_public_channel")
 
 
@@ -59,6 +54,17 @@ class BotHandlers:
     async def start_command(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
+        """
+        Handle the /start command.
+
+        Args:
+            update (Update): The update object containing message data
+            context (ContextTypes.DEFAULT_TYPE): The context object for the handler
+
+        Returns:
+            None: Sends a welcome message to the user
+        """
+        logger.info("Received /start command from user: %s", update.effective_user.id)
         await update.message.reply_text(
             "Welcome to Polka Bot! Use /help to see available commands."
         )
@@ -73,15 +79,37 @@ class BotHandlers:
             "\n"
             "Send me a URL and I'll try to validate it!"
         )
+        logger.info("Received /help command from user: %s", update.effective_user.id)
         await update.message.reply_text(help_text)
 
     def is_valid_url(self, url: str) -> bool:
+        """
+        Validate a URL.
+        Args:
+            url (str): The URL to validate
+        Returns:
+            bool: True if the URL is valid, False otherwise
+        """
+        logger.info("Validating URL: %s", url)
         parsed = urlparse(url.strip())
         return parsed.scheme in ("http", "https") and bool(parsed.netloc)
 
     async def handle_message(
         self, update: Update, context: ContextTypes.DEFAULT_TYPE
     ) -> None:
+        """
+        Handle incoming messages.
+        Args:
+            update (Update): The update object containing message data
+            context (ContextTypes.DEFAULT_TYPE): The context object for the handler
+        Returns:
+            None: Sends a validation result to the user and the channel
+        """
+        logger.info(
+            "Received message from user: %s, text: %s",
+            update.effective_user.id,
+            update.message.text,
+        )
         user_text = (update.message.text or "").strip()
         if self.is_valid_url(user_text):
             try:

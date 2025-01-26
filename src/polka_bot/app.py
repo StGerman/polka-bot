@@ -25,20 +25,9 @@ async def lifespan(app: FastAPI):
     Startup logic:
       1. Load environment config (BotConfig)
       2. Create the Telegram Application via create_app
-      3. Set the Telegram webhook
-
-    Shutdown logic:
-      - Delete the webhook
     """
     bot_config = BotConfig()
     telegram_app = create_app(bot_config)
-
-    # 3. Set Telegram webhook
-    try:
-        logger.info("Setting Telegram webhook ...")
-        await telegram_app.bot.set_webhook(bot_config.webhook_url)
-    except Exception as e:
-        logger.error("Failed to set webhook at startup: %s", e)
 
     # Store references in FastAPI app state
     app.state.bot_config = bot_config
@@ -46,13 +35,7 @@ async def lifespan(app: FastAPI):
 
     logger.info("Polka Bot is up and running!")
     yield  # run the application
-
-    # ----- Shutdown logic -----
-    logger.info("Removing Telegram webhook and shutting down Polka Bot...")
-    try:
-        await telegram_app.bot.delete_webhook()
-    except Exception as e:
-        logger.error("Failed to delete webhook: %s", e)
+    logger.info("Polka Bot is shutdown!")
 
 
 # The FastAPI application
@@ -67,7 +50,10 @@ async def telegram_webhook(request: Request):
     """
     try:
         data = await request.json()
+        logger.info("Received webhook data: %s", data)
+
         update = Update.de_json(data, fastapi_app.state.telegram_app.bot)
+        logger.info("Received update: %s", update)
 
         # Basic check: if there's no message and no callback_query,
         # treat this as invalid.
@@ -86,7 +72,8 @@ async def telegram_webhook(request: Request):
     return JSONResponse(content={"status": "ok"}, status_code=200)
 
 
-@fastapi_app.get("/")
+@fastapi_app.get("/alive")
 def health_check():
     """Simple health-check endpoint."""
+    logger.info("Health check endpoint accessed.")
     return {"status": "Polka Bot is running!"}
